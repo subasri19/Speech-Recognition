@@ -43,6 +43,7 @@ class _MyAppState extends State<MyApp> {
   Language selectedLang = languages.first;
 
   TextEditingController wordController = new TextEditingController();
+  TextEditingController simController = new TextEditingController();
 
   @override
   initState() {
@@ -103,6 +104,21 @@ class _MyAppState extends State<MyApp> {
                     controller: wordController,
                     decoration: new InputDecoration(
                       labelText: "Enter the string to be pronounced ",
+                      fillColor: Colors.white
+                    ),
+                    validator: (val){
+                      if(val.length==0) return "Can't be empty";
+                      else return val;
+                    },
+                    keyboardType: TextInputType.text,
+                    style: new TextStyle(
+                      fontFamily: "Poppins"
+                    ),
+                  ),
+                  new TextFormField(
+                    controller: simController,
+                    decoration: new InputDecoration(
+                      labelText: "Similarity (0<s<1) [1-similar; 0-dissimilarity] ",
                       fillColor: Colors.white
                     ),
                     validator: (val){
@@ -210,12 +226,12 @@ class _MyAppState extends State<MyApp> {
         for(int i=0; i<temp.length; i++){
           for(int j=0; j<output.length; j++){
             var similarity = StringSimilarity.compareTwoStrings(temp[i], output[j]);
-            if(similarity>=0.7){
+            if(similarity >= double.tryParse(simController.text)){
               String t2 = correctWords+' '+(temp[i]);
               List<String> l = t2.split(' ').toList().toSet().toList();
               String t3 = l.join(' ');
               setState(() => correctWords = t3);
-              print("&&& wrong &&& $similarity");
+              print("&&& wrong &&& $similarity" + simController.text);
               print(temp[i]);
               print(output[i]);
             }
