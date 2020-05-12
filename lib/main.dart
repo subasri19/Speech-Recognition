@@ -35,6 +35,9 @@ class _MyAppState extends State<MyApp> {
   bool _isListening = false;
 
   String transcription = '';
+  String correctWords=' ';
+  List<String> output, temp;
+  var i=0;
 
   //String _currentLocale = 'en_US';
   Language selectedLang = languages.first;
@@ -84,9 +87,18 @@ class _MyAppState extends State<MyApp> {
                 children: [
                   new Expanded(
                       child: new Container(
-                          padding: const EdgeInsets.all(8.0),
-                          color: Colors.grey.shade200,
-                          child: new Text(transcription))),
+                        padding: const EdgeInsets.all(8.0),
+                        color: Colors.grey.shade200,
+                        child: new Text(transcription)
+                      )
+                    ),
+                  new Expanded(
+                    child: new Container(
+                        padding: const EdgeInsets.all(8.0),
+                        color: Colors.blue.shade300,
+                        child: new Text(correctWords)
+                    )
+                  ),
                   new TextFormField(
                     controller: wordController,
                     decoration: new InputDecoration(
@@ -150,7 +162,11 @@ class _MyAppState extends State<MyApp> {
 
   void start() => _speech
       .listen(locale: selectedLang.code)
-      .then((result) => print('_MyAppState.start => result $result'));
+      .then((result) {
+        print('_MyAppState.start => result $result');
+        setState(() => correctWords =' ');
+        // setState(() => transciption =' ');
+      });
 
   void cancel() =>
       _speech.cancel().then((result) => setState(() => _isListening = result));
@@ -171,10 +187,49 @@ class _MyAppState extends State<MyApp> {
   void onRecognitionStarted() => setState(() => _isListening = true);
 
   void onRecognitionResult(String text){
-     setState(() => transcription = text);
-     print('$text is this');
-     var similarity = StringSimilarity.compareTwoStrings(wordController.text, text);
-     print("****"+ similarity.toString() + "****");
+    temp=text.split(' ').toList();
+    output=(wordController.text).split(' ').toList();
+    print('$text is recepted');
+    print(temp);
+    print(output);
+    var similarity = StringSimilarity.compareTwoStrings(wordController.text, text);
+    print("**********"+ similarity.toString() + "**** $text ******" + wordController.text+ "******");
+    
+    for(int i=0; i<temp.length; i++){
+      if(output.contains(temp[i])){
+        print("^^^^ correct ^^^^^ ");
+        print(temp[i]);
+        print(output);
+        String t2 = correctWords+' '+(temp[i]);
+        List<String> l = t2.split(' ').toList().toSet().toList();
+        String t3 = l.join(' ');
+        setState(() => correctWords = t3);
+      }
+      else{
+        print("&&& wrong &&&");
+        for(int i=0; i<temp.length; i++){
+          for(int j=0; j<output.length; j++){
+            var similarity = StringSimilarity.compareTwoStrings(temp[i], output[j]);
+            if(similarity>=0.7){
+              String t2 = correctWords+' '+(temp[i]);
+              List<String> l = t2.split(' ').toList().toSet().toList();
+              String t3 = l.join(' ');
+              setState(() => correctWords = t3);
+              print("&&& wrong &&& $similarity");
+              print(temp[i]);
+              print(output[i]);
+            }
+          }
+        }
+        print(temp[i]);
+        print(output);
+        // setState(() => correctWords = ' ');
+      }
+      // i++;
+    }
+    
+    
+    setState(() => transcription = text);
   }
 
   void onRecognitionComplete() => setState(() => _isListening = false);
